@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "aarushi-pw-strength-1"
+version = "0.1.0"
+description = "To address the task, the system should implement an endpoint capable of accepting a password string and analyzing its strength. This analysis would involve evaluating the password based on several factors including its length, complexity (use of uppercase and lowercase letters, numbers, and special symbols), and its adherence to or deviation from common patterns which attackers might easily guess (e.g., '123456', 'password', 'qwerty'). The endpoint should then assign a score indicating the password's strength, with categories such as weak, medium, strong, or very strong. The scoring algorithm should be designed to encourage users towards creating passwords that are hard to guess or brute-force by attackers, incorporating findings from previous searches and user inputs. Based on the evaluation, the service should also offer actionable suggestions for improving password security, such as increasing length, diversifying characters, and avoiding common patterns or personal information. Best practices include not only these technical measures but also encouraging behavior like regular password updates, the use of different passwords for different sites, and the activation of multi-factor authentication where possible. For implementation, using Python and the FastAPI framework can facilitate rapid development, with PostgreSQL for database needs and Prisma as the ORM to interact with the database efficiently. This solution aims not just to evaluate passwords but also to educate users about creating stronger, more secure passwords, thus enhancing overall security."
+authors = ["AutoGPT <info@agpt.co>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+fastapi = "^0.75.0"
+passlib = {version = "^1.7.4", extras = ["bcrypt"]}
+prisma = "*"
+pydantic = "*"
+uvicorn = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

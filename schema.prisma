@@ -1,0 +1,127 @@
+// datasource db defines the database connection settings.
+// It is configured for PostgreSQL and uses an environment variable for the connection URL.
+// The 'extensions' feature enables the use of PostgreSQL-specific data types.
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+}
+
+// generator db configures Prisma Client settings.
+// It is set up to use Prisma Client Python with asyncio interface and specific features.
+generator db {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+  previewFeatures      = ["postgresqlExtensions"]
+}
+
+model User {
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  email            String             @unique
+  passwordHash     String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  roleName         RoleName
+  role             Role               @relation(fields: [roleName], references: [name])
+  PasswordAnalyses PasswordAnalysis[]
+  APIKeys          APIKey[]
+  RateLimits       RateLimit[]
+  SDKIntegrations  SDKIntegration[]
+}
+
+model Role {
+  name  RoleName @id
+  users User[]
+}
+
+model PasswordAnalysis {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String
+  password  String
+  score     Int
+  createdAt DateTime @default(now())
+  feedback  String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model APIKey {
+  id                  String               @id @default(dbgenerated("gen_random_uuid()"))
+  key                 String               @unique
+  userId              String?
+  issuedAt            DateTime             @default(now())
+  expiresAt           DateTime?
+  user                User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ServiceIntegrations ServiceIntegration[]
+}
+
+model LocalizationContent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  key       String
+  value     String
+  language  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceIntegration {
+  id                   String                @id @default(dbgenerated("gen_random_uuid()"))
+  name                 String
+  description          String
+  apiKeyId             String
+  apiKey               APIKey                @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  IntegrationFeedbacks IntegrationFeedback[]
+  createdAt            DateTime              @default(now())
+}
+
+model IntegrationFeedback {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()"))
+  serviceIntegrationId String
+  feedback             String
+  createdAt            DateTime           @default(now())
+  serviceIntegration   ServiceIntegration @relation(fields: [serviceIntegrationId], references: [id], onDelete: Cascade)
+}
+
+model RateLimit {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  userId    String?
+  endpoint  String
+  limit     Int
+  period    DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Analytics {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  metric    String
+  value     Float
+  createdAt DateTime @default(now())
+}
+
+model SDK {
+  id              String           @id @default(dbgenerated("gen_random_uuid()"))
+  name            String
+  version         String
+  platform        String
+  downloadUrl     String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  SDKIntegrations SDKIntegration[]
+}
+
+model SDKIntegration {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  sdkId     String
+  userId    String
+  createdAt DateTime @default(now())
+  sdk       SDK      @relation(fields: [sdkId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum RoleName {
+  Individual
+  Admin
+  Organization
+}
+
